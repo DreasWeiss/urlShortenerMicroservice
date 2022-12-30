@@ -3,6 +3,7 @@
   "version": "0.0.3",
   "description": "API project for freeCodeCamp",
   "main": "index.js",
+  "author": "DreasWeiss <dreasweiss@gmail.com>",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js"
