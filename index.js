@@ -42,8 +42,9 @@ const urlShortenerList = [
 ];
 
 app.post('/api/shorturl', (req, res) => {
-  const url = req.body.url;
+  let url = req.body.url;
   const shortUrl = urlShortenerList.length + 1;
+  url = url.replace(/^https:\/\/|^http:\/\//, '');
 
   dns.lookup(url, (err, value) => {
     if (err) {
