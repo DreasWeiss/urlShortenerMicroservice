@@ -35,7 +35,7 @@ app.post('/api/shorturl', (req, res) => {
   if (regex.exec(url)){
     dns.lookup(url.replace(/^https?:\/\//i, ''), (err) => {
       if (err) {
-        res.json({ error: 'invalid url' });
+        res.json({ error: 'invalid url' }); return;
       } else {
         urlShortenerList.push({
           original_url : req.body.url , short_url : shortUrl
@@ -43,10 +43,12 @@ app.post('/api/shorturl', (req, res) => {
         res.json({
           original_url : req.body.url , short_url : shortUrl
         });
+        return;
       }
     });
   } else {
     res.json({ error: 'invalid url' });
+    return;
   }
 });
 
@@ -55,8 +57,10 @@ app.get('/api/shorturl/:new', (req, res) => {
   let urlIndex = urlShortenerList.findIndex(i => i.short_url == testShortUrl);
   if (urlIndex >= 0){
     res.redirect(urlShortenerList[urlIndex].original_url);
+    return;
   } else {
     res.json({ error: 'invalid url' });
+    return;
   }
 });
 
