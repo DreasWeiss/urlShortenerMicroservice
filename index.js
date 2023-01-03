@@ -30,25 +30,18 @@ const urlShortenerList = [];
 app.post('/api/shorturl', (req, res) => {
   let url = req.body.url;
   const shortUrl = urlShortenerList.length + 1;
-  let validUrl = url.replace(/^https:\/\/|^http:\/\//, '');
+  const regex = /^https?:\/\/(www.)?[a-z0-9]*.[a-z0-9]*/i;
 
-  if (validUrl === ''){
-    res.json({ error: 'invalid url' });
-  }
-
-  else if (url.match(/^https:\/\/|^http:\/\//)){
-    dns.lookup(validUrl, (err) => {
+  if (regex.exec(url)){
+    dns.lookup(url.replace(/^https?:\/\//i, ''), (err) => {
       if (err) {
         res.json({ error: 'invalid url' });
       } else {
         urlShortenerList.push({
-          "original_url": url,
-          "short_url": shortUrl
+          original_url : req.body.url , short_url : shortUrl
         });
-        console.log(urlShortenerList);
         res.json({
-          "original_url": url,
-          "short_url": shortUrl
+          original_url : req.body.url , short_url : shortUrl
         });
       }
     });
@@ -59,9 +52,7 @@ app.post('/api/shorturl', (req, res) => {
 
 app.get('/api/shorturl/:new', (req, res) => {
   let testShortUrl = req.params.new;
-  console.log(urlShortenerList);
   let urlIndex = urlShortenerList.findIndex(i => i.short_url == testShortUrl);
-  console.log(urlIndex);
   if (urlIndex >= 0){
     res.redirect(urlShortenerList[urlIndex].original_url);
   } else {
