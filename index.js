@@ -18,53 +18,54 @@ app.get('/', function (req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
 });
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Your first API endpoint
 app.get('/api/hello', function (req, res) {
   res.json({ greeting: 'hello API' });
 });
 
-const links = [];
+let links = [];
 let id = 0;
 
-app.post('/api/shorturl/new', (req, res) => {
-  const { url } = req.body;
+app.post('/api/shorturl', (req, res) => {
+  const {url} = req.body;
+  console.log(url);
+  const regex = /^https?:\/\/[0-9a-z]*/i;
 
-  const noHTTPSurl = url.replace(/^https?:\/\//, '');
-
-  dns.lookup(noHTTPSurl, (err) => {
+  if (!regex.exec(url)){
+    return res.json({ error: 'invalid url' });
+  } else {
+    dns.lookup(url.replace(/^https?:\/\//i, ''), (err) => {
     if (err) {
-      return res.json({
-        error: 'invalid url'
-      });
+      return res.json({ error: 'invalid url' });
     } else {
       id++;
-
-      const link = {
+      let link = {
         original_url : url, 
-        short_url : '${id}'
+        short_url : id-1
       };
-
+    
       links.push(link);
-      
-      return res.json(link);
+    
+      res.json(link);
     }
   });
-});
-
-app.get('/api/shorturl/:id', (req, res) => {
-  const {id} = req.params;
-  const link = links.find(l=>l.short_url === id);
-
-  if(link){
-    return res.redirect(link.original_url);
-  } else {
-    return res.json({
-      error: 'No short url'
-    });
   }
 });
+
+// app.get('/api/shorturl/:id', (req, res) => {
+//   // const {id} = req.params;
+//   // const link = links.find(l=>l.short_url === `${id}`);
+
+//   // if(link){
+//   //   return res.redirect(link.original_url);
+//   // } else {
+//   //   return res.json({
+//   //     error: 'No short url'
+//   //   });
+//   // }
+// });
 
 
 
