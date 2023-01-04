@@ -25,44 +25,48 @@ app.get('/api/hello', function (req, res) {
   res.json({ greeting: 'hello API' });
 });
 
-const urlShortenerList = [];
+const links = [];
+let id = 0;
 
-app.post('/api/shorturl', (req, res) => {
-  let url = req.body.url;
-  const shortUrl = urlShortenerList.length + 1;
-  const regex = /^https?:\/\/(www.)?[a-z0-9]*.[a-z0-9]*/i;
+app.post('/api/shorturl/new', (req, res) => {
+  const { url } = req.body;
 
-  if (regex.exec(url)){
-    dns.lookup(url.replace(/^https?:\/\//i, ''), (err) => {
-      if (err) {
-        res.json({ error: 'invalid url' }); return;
-      } else {
-        urlShortenerList.push({
-          original_url : req.body.url , short_url : shortUrl
-        });
-        res.json({
-          original_url : req.body.url , short_url : shortUrl
-        });
-        return;
-      }
+  const noHTTPSurl = url.replace(/^https?:\/\//, '');
+
+  dns.lookup(noHTTPSurl, (err) => {
+    if (err) {
+      return res.json({
+        error: 'invalid url'
+      });
+    } else {
+      id++;
+
+      const link = {
+        original_url : url, 
+        short_url : '${id}'
+      };
+
+      links.push(link);
+      
+      return res.json(link);
+    }
+  });
+});
+
+app.get('/api/shorturl/:id', (req, res) => {
+  const {id} = req.params;
+  const link = links.find(l=>l.short_url === id);
+
+  if(link){
+    return res.redirect(link.original_url);
+  } else {
+    return res.json({
+      error: 'No short url'
     });
-  } else {
-    res.json({ error: 'invalid url' });
-    return;
   }
 });
 
-app.get('/api/shorturl/:new', (req, res) => {
-  let testShortUrl = req.params.new;
-  let urlIndex = urlShortenerList.findIndex(i => i.short_url == testShortUrl);
-  if (urlIndex >= 0){
-    res.redirect(urlShortenerList[urlIndex].original_url);
-    return;
-  } else {
-    res.json({ error: 'invalid url' });
-    return;
-  }
-});
+
 
 app.listen(port, function () {
   console.log(`Listening on port ${port}`);
